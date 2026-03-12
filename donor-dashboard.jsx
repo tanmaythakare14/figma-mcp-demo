@@ -1,0 +1,528 @@
+import { useState } from "react";
+
+const donorData = [
+  { id: "DNR-2024-0891", unos: "UNO-748291", match: "MCH-3821", age: 34, sex: "M", kdpi: 18, status: "In Progress", alertSent: "Yes", centerResponses: "3/5", lastUpdated: "2 min ago" },
+  { id: "DNR-2024-0890", unos: "UNO-748290", match: "MCH-3820", age: 52, sex: "F", kdpi: 67, status: "Alert Accepted", alertSent: "Yes", centerResponses: "5/5", lastUpdated: "14 min ago" },
+  { id: "DNR-2024-0889", unos: "UNO-748289", match: "MCH-3819", age: 28, sex: "M", kdpi: 12, status: "Alert Unaccepted", alertSent: "Yes", centerResponses: "0/5", lastUpdated: "31 min ago" },
+  { id: "DNR-2024-0888", unos: "UNO-748288", match: "MCH-3818", age: 61, sex: "F", kdpi: 82, status: "Draft", alertSent: "No", centerResponses: "—", lastUpdated: "1 hr ago" },
+  { id: "DNR-2024-0887", unos: "UNO-748287", match: "MCH-3817", age: 45, sex: "M", kdpi: 44, status: "In Progress", alertSent: "Yes", centerResponses: "2/5", lastUpdated: "2 hr ago" },
+  { id: "DNR-2024-0886", unos: "UNO-748286", match: "MCH-3816", age: 39, sex: "F", kdpi: 29, status: "Alert Accepted", alertSent: "Yes", centerResponses: "4/5", lastUpdated: "3 hr ago" },
+  { id: "DNR-2024-0885", unos: "UNO-748285", match: "MCH-3815", age: 57, sex: "M", kdpi: 73, status: "In Progress", alertSent: "Yes", centerResponses: "1/5", lastUpdated: "5 hr ago" },
+  { id: "DNR-2024-0884", unos: "UNO-748284", match: "MCH-3814", age: 22, sex: "F", kdpi: 8, status: "Alert Accepted", alertSent: "Yes", centerResponses: "5/5", lastUpdated: "6 hr ago" },
+  { id: "DNR-2024-0883", unos: "UNO-748283", match: "MCH-3813", age: 48, sex: "M", kdpi: 55, status: "Draft", alertSent: "No", centerResponses: "—", lastUpdated: "8 hr ago" },
+  { id: "DNR-2024-0882", unos: "UNO-748282", match: "MCH-3812", age: 36, sex: "F", kdpi: 37, status: "Alert Unaccepted", alertSent: "Yes", centerResponses: "0/5", lastUpdated: "10 hr ago" },
+];
+
+const statusConfig = {
+  "In Progress":      { bg: "#EFF6FF", color: "#2563EB", dot: "#3B82F6" },
+  "Alert Accepted":   { bg: "#F0FDF4", color: "#16A34A", dot: "#22C55E" },
+  "Alert Unaccepted": { bg: "#FFF7ED", color: "#C2410C", dot: "#F97316" },
+  "Draft":            { bg: "#F9FAFB", color: "#6B7280", dot: "#9CA3AF" },
+};
+
+const Icon = ({ name, size = 20, color = "currentColor", strokeWidth = 1.75 }) => {
+  const icons = {
+    grid: <><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></>,
+    users: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
+    heart: <><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>,
+    activity: <><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></>,
+    bell: <><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>,
+    "bar-chart": <><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>,
+    settings: <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></>,
+    plus: <><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></>,
+    search: <><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>,
+    "chevron-down": <><polyline points="6 9 12 15 18 9"/></>,
+    "trending-up": <><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></>,
+    "trending-down": <><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></>,
+    users2: <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>,
+    clock: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
+    "check-circle": <><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>,
+    send: <><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></>,
+    "chevron-left": <><polyline points="15 18 9 12 15 6"/></>,
+    "chevron-right": <><polyline points="9 18 15 12 9 6"/></>,
+    "sliders-horizontal": <><line x1="21" y1="4" x2="14" y2="4"/><line x1="10" y1="4" x2="3" y2="4"/><line x1="21" y1="12" x2="12" y2="12"/><line x1="8" y1="12" x2="3" y2="12"/><line x1="21" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="3" y2="20"/><line x1="14" y1="2" x2="14" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="16" y1="18" x2="16" y2="22"/></>,
+    user: <><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>,
+    calendar: <><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>,
+  };
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+      {icons[name]}
+    </svg>
+  );
+};
+
+const StatusBadge = ({ status }) => {
+  const cfg = statusConfig[status] || statusConfig["Draft"];
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 5,
+      padding: "3px 10px", borderRadius: 999,
+      backgroundColor: cfg.bg, color: cfg.color,
+      fontSize: 12, fontWeight: 500, whiteSpace: "nowrap",
+    }}>
+      <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: cfg.dot, flexShrink: 0 }} />
+      {status}
+    </span>
+  );
+};
+
+const KpiCard = ({ title, subtitle, value, icon, iconBg, iconColor, trend, trendUp }) => (
+  <div style={{
+    background: "#FFFFFF", border: "1px solid #E5E7EB",
+    borderRadius: 12, padding: "18px 20px 16px",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+    flex: 1, minWidth: 0,
+    display: "flex", flexDirection: "column", gap: 14,
+  }}>
+    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", letterSpacing: "-0.1px", marginBottom: 2, lineHeight: 1.3 }}>{title}</div>
+        <div style={{ fontSize: 11, fontWeight: 400, color: "#9CA3AF", lineHeight: 1.4 }}>{subtitle}</div>
+      </div>
+      <div style={{ width: 38, height: 38, borderRadius: 9, backgroundColor: iconBg, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Icon name={icon} size={16} color={iconColor} />
+      </div>
+    </div>
+    <div>
+      <div style={{ fontSize: 28, fontWeight: 700, color: "#111827", letterSpacing: "-0.5px", lineHeight: 1, marginBottom: 6 }}>{value}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        <Icon name={trendUp ? "trending-up" : "trending-down"} size={13} color={trendUp ? "#16A34A" : "#DC2626"} />
+        <span style={{ fontSize: 12, fontWeight: 500, color: trendUp ? "#16A34A" : "#DC2626" }}>{trend}</span>
+        <span style={{ fontSize: 12, color: "#9CA3AF" }}>vs last period</span>
+      </div>
+    </div>
+  </div>
+);
+
+const KdpiDropdown = ({ kdpiMin, kdpiMax, setKdpiMin, setKdpiMax, onClose }) => (
+  <div style={{
+    position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 200,
+    background: "#fff", border: "1px solid #E5E7EB", borderRadius: 10,
+    padding: "16px 18px", width: 276,
+    boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
+  }}>
+    <div style={{ fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 14, letterSpacing: "-0.1px" }}>KDPI Range Filter</div>
+    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 10, color: "#9CA3AF", marginBottom: 2 }}>MIN</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#3B82F6" }}>{kdpiMin}%</div>
+      </div>
+      <div style={{ alignSelf: "center", color: "#D1D5DB", fontSize: 14 }}>—</div>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 10, color: "#9CA3AF", marginBottom: 2 }}>MAX</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#3B82F6" }}>{kdpiMax}%</div>
+      </div>
+    </div>
+    <div style={{ position: "relative", height: 32, display: "flex", alignItems: "center", marginBottom: 6 }}>
+      <div style={{ position: "absolute", left: 0, right: 0, height: 4, borderRadius: 2, background: "#E5E7EB" }} />
+      <div style={{ position: "absolute", left: `${kdpiMin}%`, right: `${100 - kdpiMax}%`, height: 4, borderRadius: 2, background: "#3B82F6" }} />
+      <input type="range" min={0} max={100} value={kdpiMin}
+        onChange={e => setKdpiMin(Math.min(Number(e.target.value), kdpiMax - 1))}
+        style={{ position: "absolute", width: "100%", opacity: 0, cursor: "pointer", height: 32, zIndex: 2 }} />
+      <input type="range" min={0} max={100} value={kdpiMax}
+        onChange={e => setKdpiMax(Math.max(Number(e.target.value), kdpiMin + 1))}
+        style={{ position: "absolute", width: "100%", opacity: 0, cursor: "pointer", height: 32, zIndex: 3 }} />
+      <div style={{ position: "absolute", left: `${kdpiMin}%`, transform: "translateX(-50%)", width: 14, height: 14, borderRadius: "50%", background: "#fff", border: "2px solid #3B82F6", boxShadow: "0 1px 4px rgba(0,0,0,0.15)", zIndex: 1 }} />
+      <div style={{ position: "absolute", left: `${kdpiMax}%`, transform: "translateX(-50%)", width: 14, height: 14, borderRadius: "50%", background: "#fff", border: "2px solid #3B82F6", boxShadow: "0 1px 4px rgba(0,0,0,0.15)", zIndex: 1 }} />
+    </div>
+    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#D1D5DB", marginBottom: 14 }}>
+      <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+    </div>
+    <button onClick={onClose} style={{
+      width: "100%", padding: "8px", borderRadius: 7,
+      background: "#3B82F6", color: "#fff", border: "none", cursor: "pointer",
+      fontSize: 13, fontWeight: 500, fontFamily: "inherit",
+    }}>Apply Filter</button>
+  </div>
+);
+
+export default function DonorDashboard() {
+  const [activeTab, setActiveTab] = useState("All Donors");
+  const [search, setSearch] = useState("");
+  const [kdpiMin, setKdpiMin] = useState(0);
+  const [kdpiMax, setKdpiMax] = useState(100);
+  const [dayFilter, setDayFilter] = useState("Last 7 Days");
+  const [showDayDropdown, setShowDayDropdown] = useState(false);
+  const [showKdpiDropdown, setShowKdpiDropdown] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hoveredRow, setHoveredRow] = useState(null);
+  const [activeNav, setActiveNav] = useState("Donor Management");
+
+  const tabs = ["All Donors", "Active Donors", "Pending Review", "Completed"];
+  const tabCounts = {
+    "All Donors": donorData.length,
+    "Active Donors": donorData.filter(d => d.status === "In Progress").length,
+    "Pending Review": donorData.filter(d => d.status === "Draft").length,
+    "Completed": donorData.filter(d => d.status === "Alert Accepted" || d.status === "Alert Unaccepted").length,
+  };
+  const dayOptions = ["Today", "Last 7 Days", "Last 30 Days", "Last 90 Days"];
+  const navIcons = {
+    "Dashboard": "grid", "Donor Management": "users", "Organ Allocation": "heart",
+    "Match Reports": "activity", "Alerts": "bell", "Analytics": "bar-chart", "Settings": "settings",
+  };
+
+  const filtered = donorData.filter(d => {
+    const matchSearch = search === "" ||
+      d.id.toLowerCase().includes(search.toLowerCase()) ||
+      d.unos.toLowerCase().includes(search.toLowerCase());
+    const matchTab =
+      activeTab === "All Donors" ? true :
+      activeTab === "Active Donors" ? d.status === "In Progress" :
+      activeTab === "Pending Review" ? d.status === "Draft" :
+      d.status === "Alert Accepted" || d.status === "Alert Unaccepted";
+    const matchKdpi = d.kdpi >= kdpiMin && d.kdpi <= kdpiMax;
+    return matchSearch && matchTab && matchKdpi;
+  });
+
+  const rowsPerPage = 8;
+  const totalPages = Math.ceil(filtered.length / rowsPerPage);
+  const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+  // Status is last column
+  const tableHeaders = ["Donor ID", "UNOS ID", "Match ID", "Age / Sex", "KDPI", "Alert Sent", "Center Responses", "Last Updated", "Status"];
+
+  return (
+    <div
+      onClick={() => { setShowDayDropdown(false); setShowKdpiDropdown(false); }}
+      style={{ display: "flex", height: "100vh", fontFamily: "'Inter', -apple-system, sans-serif", background: "#F8F9FA", overflow: "hidden" }}
+    >
+      {/* ─────────── SIDEBAR ─────────── */}
+      <aside style={{ width: 224, background: "#FFFFFF", borderRight: "1px solid #E5E7EB", display: "flex", flexDirection: "column", flexShrink: 0 }}>
+        {/* Logo block — exact same height as topbar (64px) */}
+        <div style={{ height: 64, padding: "0 20px", borderBottom: "1px solid #E5E7EB", display: "flex", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: "#3B82F6", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Icon name="heart" size={15} color="#fff" strokeWidth={2} />
+            </div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#111827", letterSpacing: "-0.2px", lineHeight: 1.25 }}>LifeLink OPO</div>
+              <div style={{ fontSize: 10, fontWeight: 400, color: "#9CA3AF", lineHeight: 1.4 }}>Management Portal</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: "8px 0", overflowY: "auto" }}>
+          <div style={{ padding: "8px 16px 4px", fontSize: 10, fontWeight: 600, color: "#D1D5DB", letterSpacing: "0.06em", textTransform: "uppercase" }}>Main Menu</div>
+          {Object.keys(navIcons).map(label => {
+            const isActive = activeNav === label;
+            return (
+              <div key={label} onClick={() => setActiveNav(label)} style={{
+                display: "flex", alignItems: "center", gap: 10,
+                padding: "9px 16px", cursor: "pointer",
+                borderLeft: isActive ? "3px solid #3B82F6" : "3px solid transparent",
+                background: isActive ? "#EFF6FF" : "transparent",
+                transition: "all 0.12s",
+              }}>
+                <Icon name={navIcons[label]} size={17} color={isActive ? "#3B82F6" : "#6B7280"} />
+                <span style={{ fontSize: 13, fontWeight: isActive ? 600 : 400, color: isActive ? "#3B82F6" : "#374151" }}>{label}</span>
+              </div>
+            );
+          })}
+        </nav>
+
+        {/* Bottom user */}
+        <div style={{ padding: "12px 14px", borderTop: "1px solid #E5E7EB" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+            <div style={{ width: 30, height: 30, borderRadius: "50%", background: "#EFF6FF", border: "1.5px solid #BFDBFE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Icon name="user" size={13} color="#3B82F6" />
+            </div>
+            <div style={{ overflow: "hidden", flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Dr. Sarah Chen</div>
+              <div style={{ fontSize: 10, color: "#9CA3AF" }}>OPO Administrator</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* ─────────── MAIN ─────────── */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+
+        {/* ── Topbar — height 64px, aligned with sidebar logo ── */}
+        <header style={{
+          height: 64, background: "#FFFFFF", borderBottom: "1px solid #E5E7EB",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "0 28px", flexShrink: 0,
+        }}>
+          {/* Breadcrumb */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 12, color: "#9CA3AF" }}>OPO Admin</span>
+            <span style={{ fontSize: 12, color: "#D1D5DB" }}>/</span>
+            <span style={{ fontSize: 12, fontWeight: 500, color: "#374151" }}>Donor Management</span>
+          </div>
+
+          {/* Right */}
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{ position: "relative", cursor: "pointer" }}>
+              <div style={{ width: 36, height: 36, borderRadius: 8, border: "1px solid #E5E7EB", display: "flex", alignItems: "center", justifyContent: "center", background: "#fff" }}>
+                <Icon name="bell" size={16} color="#374151" />
+              </div>
+              <span style={{ position: "absolute", top: 8, right: 8, width: 7, height: 7, borderRadius: "50%", background: "#EF4444", border: "2px solid #fff" }} />
+            </div>
+            <div style={{ width: 1, height: 22, background: "#E5E7EB" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 9, cursor: "pointer" }}>
+              <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#EFF6FF", border: "1.5px solid #BFDBFE", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Icon name="user" size={14} color="#3B82F6" />
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", letterSpacing: "-0.1px", lineHeight: 1.3 }}>Dr. Sarah Chen</div>
+                <div style={{ fontSize: 11, color: "#9CA3AF", lineHeight: 1.3 }}>sarah.chen@opo.org</div>
+              </div>
+              <Icon name="chevron-down" size={14} color="#9CA3AF" />
+            </div>
+          </div>
+        </header>
+
+        {/* ── Scrollable content ── */}
+        <main style={{ flex: 1, overflowY: "auto", padding: "28px 28px 32px" }}>
+
+          {/* ── Section 1: Page Header ── */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              {/* Small icon on left */}
+              <div style={{ width: 36, height: 36, borderRadius: 9, background: "#EFF6FF", border: "1px solid #BFDBFE", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Icon name="users" size={16} color="#3B82F6" strokeWidth={2} />
+              </div>
+              <div>
+                <h1 style={{ fontSize: 20, fontWeight: 600, color: "#111827", letterSpacing: "-0.2px", margin: 0, lineHeight: 1.3 }}>Donor Management</h1>
+                <p style={{ fontSize: 13, fontWeight: 500, color: "#6B7280", margin: 0, lineHeight: 1.45 }}>Manage active donor cases and organ allocations</p>
+              </div>
+            </div>
+            <button style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "9px 16px", borderRadius: 8,
+              background: "#3B82F6", color: "#fff",
+              border: "none", cursor: "pointer",
+              fontSize: 13, fontWeight: 500, letterSpacing: "-0.1px",
+              boxShadow: "0 1px 3px rgba(59,130,246,0.35)", fontFamily: "inherit",
+            }}>
+              <Icon name="plus" size={14} color="#fff" strokeWidth={2.5} />
+              Add New Donor
+            </button>
+          </div>
+
+          {/* ── Section 2: KPI Cards ── */}
+          <div style={{ display: "flex", gap: 16, marginBottom: 28 }}>
+            <KpiCard title="Total Donors" subtitle="All registered donors" value="1,284" icon="users2" iconBg="#EFF6FF" iconColor="#3B82F6" trend="+12.5%" trendUp={true} />
+            <KpiCard title="Awaiting Responses" subtitle="Pending center replies" value="47" icon="clock" iconBg="#FFF7ED" iconColor="#F97316" trend="-3.2%" trendUp={false} />
+            <KpiCard title="Organs Accepted" subtitle="Successful allocations" value="389" icon="check-circle" iconBg="#F0FDF4" iconColor="#16A34A" trend="+8.1%" trendUp={true} />
+            <KpiCard title="Alerts Sent" subtitle="Notifications dispatched" value="156" icon="send" iconBg="#F5F3FF" iconColor="#7C3AED" trend="+5.4%" trendUp={true} />
+          </div>
+
+          {/* ── Section 3 + 4: Unified filter + table card ── */}
+          <div style={{ background: "#FFFFFF", border: "1px solid #E5E7EB", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.04)", overflow: "visible" }}>
+
+            {/* ── Line Tabs ── */}
+            <div style={{ borderBottom: "1px solid #E5E7EB", padding: "0 20px", display: "flex", alignItems: "center" }}>
+              {tabs.map(t => {
+                const isActive = activeTab === t;
+                return (
+                  <button key={t} onClick={() => { setActiveTab(t); setPage(1); }} style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "13px 14px 12px",
+                    border: "none", background: "none", cursor: "pointer",
+                    fontSize: 13, fontWeight: isActive ? 600 : 400,
+                    color: isActive ? "#3B82F6" : "#6B7280",
+                    borderBottom: isActive ? "2px solid #3B82F6" : "2px solid transparent",
+                    marginBottom: -1,
+                    fontFamily: "inherit", letterSpacing: "-0.1px",
+                    transition: "color 0.12s", whiteSpace: "nowrap",
+                  }}>
+                    {t}
+                    <span style={{
+                      fontSize: 11, fontWeight: 500, padding: "1px 6px", borderRadius: 999,
+                      background: isActive ? "#DBEAFE" : "#F3F4F6",
+                      color: isActive ? "#2563EB" : "#9CA3AF",
+                    }}>{tabCounts[t]}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* ── Search + Filters row (same horizontal line) ── */}
+            <div style={{ padding: "12px 20px", borderBottom: "1px solid #E5E7EB", display: "flex", alignItems: "center", gap: 10 }}>
+              {/* Search */}
+              <div style={{ position: "relative", flex: "0 0 300px" }}>
+                <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+                  <Icon name="search" size={14} color="#9CA3AF" />
+                </span>
+                <input
+                  value={search}
+                  onChange={e => { setSearch(e.target.value); setPage(1); }}
+                  placeholder="Search by donor name, UNOS ID..."
+                  style={{
+                    width: "100%", padding: "7px 12px 7px 32px",
+                    border: "1px solid #E5E7EB", borderRadius: 8,
+                    fontSize: 13, color: "#374151", outline: "none",
+                    background: "#F9FAFB", boxSizing: "border-box", fontFamily: "inherit",
+                  }}
+                />
+              </div>
+
+              <div style={{ flex: 1 }} />
+
+              {/* Filter by Days — dropdown */}
+              <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
+                <button onClick={() => { setShowDayDropdown(v => !v); setShowKdpiDropdown(false); }} style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "7px 12px", borderRadius: 8,
+                  border: showDayDropdown ? "1px solid #3B82F6" : "1px solid #E5E7EB",
+                  background: showDayDropdown ? "#EFF6FF" : "#fff",
+                  cursor: "pointer", fontSize: 13,
+                  color: showDayDropdown ? "#3B82F6" : "#374151",
+                  fontFamily: "inherit", whiteSpace: "nowrap",
+                }}>
+                  <Icon name="calendar" size={14} color={showDayDropdown ? "#3B82F6" : "#6B7280"} />
+                  {dayFilter}
+                  <Icon name="chevron-down" size={13} color={showDayDropdown ? "#3B82F6" : "#9CA3AF"} />
+                </button>
+                {showDayDropdown && (
+                  <div style={{
+                    position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 200,
+                    background: "#fff", border: "1px solid #E5E7EB", borderRadius: 9,
+                    overflow: "hidden", minWidth: 160,
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
+                  }}>
+                    {dayOptions.map(d => (
+                      <div key={d} onClick={() => { setDayFilter(d); setShowDayDropdown(false); }} style={{
+                        padding: "9px 14px", cursor: "pointer",
+                        fontSize: 13, fontWeight: dayFilter === d ? 600 : 400,
+                        color: dayFilter === d ? "#3B82F6" : "#374151",
+                        background: dayFilter === d ? "#EFF6FF" : "transparent",
+                      }}>{d}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* KDPI Range — dropdown */}
+              <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
+                <button onClick={() => { setShowKdpiDropdown(v => !v); setShowDayDropdown(false); }} style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "7px 12px", borderRadius: 8,
+                  border: showKdpiDropdown ? "1px solid #3B82F6" : "1px solid #E5E7EB",
+                  background: showKdpiDropdown ? "#EFF6FF" : "#fff",
+                  cursor: "pointer", fontSize: 13,
+                  color: showKdpiDropdown ? "#3B82F6" : "#374151",
+                  fontFamily: "inherit", whiteSpace: "nowrap",
+                }}>
+                  <Icon name="sliders-horizontal" size={14} color={showKdpiDropdown ? "#3B82F6" : "#6B7280"} />
+                  KDPI: {kdpiMin}%–{kdpiMax}%
+                  <Icon name="chevron-down" size={13} color={showKdpiDropdown ? "#3B82F6" : "#9CA3AF"} />
+                </button>
+                {showKdpiDropdown && (
+                  <KdpiDropdown
+                    kdpiMin={kdpiMin} kdpiMax={kdpiMax}
+                    setKdpiMin={v => { setKdpiMin(v); setPage(1); }}
+                    setKdpiMax={v => { setKdpiMax(v); setPage(1); }}
+                    onClose={() => setShowKdpiDropdown(false)}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* ── Table ── */}
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+                <colgroup>
+                  <col style={{ width: "13%" }} />
+                  <col style={{ width: "11%" }} />
+                  <col style={{ width: "10%" }} />
+                  <col style={{ width: "8%" }} />
+                  <col style={{ width: "6%" }} />
+                  <col style={{ width: "8%" }} />
+                  <col style={{ width: "12%" }} />
+                  <col style={{ width: "10%" }} />
+                  <col style={{ width: "14%" }} />
+                </colgroup>
+                <thead>
+                  <tr style={{ background: "#F9FAFB", borderBottom: "1px solid #E5E7EB" }}>
+                    {tableHeaders.map(h => (
+                      <th key={h} style={{
+                        padding: "10px 16px", textAlign: "left",
+                        fontSize: 13, fontWeight: 600, color: "#6B7280",
+                        letterSpacing: 0, whiteSpace: "nowrap",
+                      }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginated.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} style={{ padding: "48px", textAlign: "center", color: "#9CA3AF", fontSize: 13 }}>
+                        No donors match the current filters.
+                      </td>
+                    </tr>
+                  ) : paginated.map(d => (
+                    <tr key={d.id}
+                      onMouseEnter={() => setHoveredRow(d.id)}
+                      onMouseLeave={() => setHoveredRow(null)}
+                      style={{
+                        borderBottom: "1px solid #F3F4F6",
+                        background: hoveredRow === d.id ? "#F9FAFB" : "#fff",
+                        transition: "background 0.1s", height: 48,
+                      }}>
+                      <td style={{ padding: "0 16px", fontSize: 13, fontWeight: 500, color: "#3B82F6", fontVariantNumeric: "tabular-nums" }}>{d.id}</td>
+                      <td style={{ padding: "0 16px", fontSize: 13, color: "#374151", fontVariantNumeric: "tabular-nums" }}>{d.unos}</td>
+                      <td style={{ padding: "0 16px", fontSize: 13, color: "#374151", fontVariantNumeric: "tabular-nums" }}>{d.match}</td>
+                      <td style={{ padding: "0 16px", fontSize: 13, color: "#374151" }}>{d.age} / {d.sex}</td>
+                      <td style={{ padding: "0 16px" }}>
+                        <span style={{
+                          fontSize: 13, fontWeight: 600, fontVariantNumeric: "tabular-nums",
+                          color: d.kdpi >= 70 ? "#DC2626" : d.kdpi >= 40 ? "#D97706" : "#16A34A",
+                        }}>{d.kdpi}%</span>
+                      </td>
+                      <td style={{ padding: "0 16px" }}>
+                        <span style={{ fontSize: 13, fontWeight: d.alertSent === "Yes" ? 500 : 400, color: d.alertSent === "Yes" ? "#16A34A" : "#9CA3AF" }}>
+                          {d.alertSent}
+                        </span>
+                      </td>
+                      <td style={{ padding: "0 16px", fontSize: 13, color: "#374151", fontVariantNumeric: "tabular-nums" }}>{d.centerResponses}</td>
+                      <td style={{ padding: "0 16px", fontSize: 12, color: "#9CA3AF" }}>{d.lastUpdated}</td>
+                      {/* Status — last */}
+                      <td style={{ padding: "0 16px" }}><StatusBadge status={d.status} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* ── Pagination ── */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 20px", borderTop: "1px solid #E5E7EB" }}>
+              <span style={{ fontSize: 12, color: "#9CA3AF" }}>
+                Showing {filtered.length === 0 ? 0 : (page - 1) * rowsPerPage + 1}–{Math.min(page * rowsPerPage, filtered.length)} of {filtered.length} donors
+              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <button disabled={page === 1} onClick={() => setPage(p => p - 1)} style={{
+                  display: "flex", alignItems: "center", gap: 4, padding: "6px 10px", borderRadius: 6,
+                  border: "1px solid #E5E7EB", background: page === 1 ? "#F9FAFB" : "#fff",
+                  cursor: page === 1 ? "not-allowed" : "pointer", fontSize: 12,
+                  color: page === 1 ? "#D1D5DB" : "#374151", fontFamily: "inherit",
+                }}>
+                  <Icon name="chevron-left" size={12} color={page === 1 ? "#D1D5DB" : "#374151"} /> Previous
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                  <button key={n} onClick={() => setPage(n)} style={{
+                    width: 30, height: 30, borderRadius: 6,
+                    border: n === page ? "1px solid #3B82F6" : "1px solid #E5E7EB",
+                    background: n === page ? "#EFF6FF" : "#fff", cursor: "pointer",
+                    fontSize: 12, fontWeight: n === page ? 600 : 400,
+                    color: n === page ? "#3B82F6" : "#374151", fontFamily: "inherit",
+                  }}>{n}</button>
+                ))}
+                <button disabled={page === totalPages || totalPages === 0} onClick={() => setPage(p => p + 1)} style={{
+                  display: "flex", alignItems: "center", gap: 4, padding: "6px 10px", borderRadius: 6,
+                  border: "1px solid #E5E7EB",
+                  background: (page === totalPages || totalPages === 0) ? "#F9FAFB" : "#fff",
+                  cursor: (page === totalPages || totalPages === 0) ? "not-allowed" : "pointer",
+                  fontSize: 12, color: (page === totalPages || totalPages === 0) ? "#D1D5DB" : "#374151", fontFamily: "inherit",
+                }}>
+                  Next <Icon name="chevron-right" size={12} color={(page === totalPages || totalPages === 0) ? "#D1D5DB" : "#374151"} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
