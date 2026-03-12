@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────
 //  DONOR CONSTANTS
-//  All static config, enums, field definitions
+//  All static config, enums, field
 // ─────────────────────────────────────────────
 
 export const STATUS_CONFIG = {
